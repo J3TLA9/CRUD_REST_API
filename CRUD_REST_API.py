@@ -1,3 +1,4 @@
+import html
 from flask import Flask, make_response, jsonify, request, redirect, url_for
 from flask_mysqldb import MySQL
 
@@ -73,6 +74,7 @@ def customer_create_page():
     </a>
     '''
     return form_html
+
 @app.route("/customer/read")
 def customer_read_page():
     html = '''
@@ -171,7 +173,7 @@ def get_customer():
     data = data_fetch('''
     select * from customer
     ''')
-    return make_response(jsonify(data), 200)
+    return html + make_response(jsonify(data), 200)
 
 @app.route("/customer/<int:id>", methods=["GET"])
 def get_customer_by_id(id):
@@ -215,7 +217,22 @@ def add_customer():
     cur = mysql.connection.cursor()
     cur.execute("SELECT MAX(customer_id) FROM customer")
     max_id_result = cur.fetchone()
+    
+    html = """
+    <p></p>
+    <a href="/">
+    <button>Go Back</button>
+    </a>"""
+    
+    if not gender.isalpha():
+        return "Invalid gender. Gender should only contain alphabetic characters." + html
 
+    if not all(char.isdigit() or char == "+" for char in phone_number):
+        return "Invalid phone number. Phone number should only contain digits and '+'." + html
+
+    for field in [country, province, municipality]:
+        if any(char.isdigit() for char in field):
+            return f"Invalid {field}. {field} should not contain numbers." + html
     print("max_id_result:", max_id_result)
 
 
