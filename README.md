@@ -1,5 +1,5 @@
 # CRUD_REST_API
- This is a final project for IT6
+ This is a final project for IT6 by John Michael Relova
 
  
 CRUD REST API
