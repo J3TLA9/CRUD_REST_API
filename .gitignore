@@ -3,3 +3,4 @@ rest-api/
 *.pyproj
 *.sln
 __pycache__/
+*.pyproj.user

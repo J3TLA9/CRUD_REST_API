@@ -11,8 +11,12 @@ class appTest(unittest.TestCase):
     def test_main_page(self):
         html = '''
     <p>Welcome to Car Hire Database</p>
+    <a href="/customer/create">
+    <button>Create Customer</button>
+    <p></p>
+    </a>
     <a href="/customer">
-    <button>Customer</button>
+    <button>Read Customer</button>
     </a>
     '''
         response = self.app.get("/")
