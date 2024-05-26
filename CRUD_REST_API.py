@@ -29,9 +29,12 @@ def main_page():
     <button>Read Customer</button>
     </a>
     <p></p>
-    </a>
     <a href="/customer/update">
     <button>Edit Customer</button>
+    </a>
+    <p></p>
+    <a href="/customer/delete">
+    <button>Delete Customer</button>
     </a>
     '''
     return html
@@ -119,6 +122,12 @@ def customer_read_page():
     '''
     return html
 
+@app.route("/customer", methods=["GET"])
+def get_customer():
+    data = data_fetch("""
+    select * from customer
+    """)
+    return make_response(jsonify(data), 200)
 
 @app.route("/customer/search/ID", methods=["GET"])
 def customer_search_ID():
@@ -209,40 +218,25 @@ def customer_update_page():
     </script>
     '''
 
+@app.route("/customer/delete", methods=["GET", "POST"])
+def customer_delete_page():
+    if request.method == "POST":
+        customer_id = request.form.get("customer_id")
+        query = f"DELETE FROM customer WHERE customer_id = {customer_id}"
+        cur = mysql.connection.cursor()
+        cur.execute(query)
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({"message": f"Customer with ID {customer_id} deleted successfully"}), 200
 
-@app.route("/customer", methods=["GET"])
-def get_customer():
-    data = data_fetch("""
-    select * from customer
-    """)
-    return html + make_response(jsonify(data), 200)
-
-@app.route("/customer/<int:id>", methods=["GET"])
-def get_customer_by_id(id):
-    data = data_fetch("""SELECT * FROM customer where customer_id = {}""".format(id))
-    return make_response(jsonify(data), 200)
-
-from flask import request
-
-@app.route("/customer/<string:name>", methods=["GET"])
-def get_customer_by_name(name):
-    query = """
-    SELECT *
-    FROM customer
-    WHERE 
-        customer_name LIKE CONCAT('%', '{}', '%')
-        OR gender LIKE CONCAT('%', '{}', '%')
-        OR email_address LIKE CONCAT('%', '{}', '%')
-        OR phone_number LIKE CONCAT('%', '{}', '%')
-        OR country LIKE CONCAT('%', '{}', '%')
-        OR province LIKE CONCAT('%', '{}', '%')
-        OR municipality LIKE CONCAT('%', '{}', '%')
-        OR address LIKE CONCAT('%', '{}', '%');
-    """.format(name, name, name, name, name, name, name, name)
-    
-    data = data_fetch(query)
-    return make_response(jsonify(data), 200)
-
+    form_html = '''
+    <form action="/customer/delete" method="post">
+        <label for="customer_id">Customer ID:</label>
+        <input type="text" id="customer_id" name="customer_id" required>
+        <button type="submit">Delete Customer</button>
+    </form>
+    '''
+    return form_html
 
     
 @app.route("/customer", methods=["POST"])
@@ -266,8 +260,8 @@ def add_customer():
     <button>Go Back</button>
     </a>"""
     
-    if not gender.isalpha():
-        return "Invalid gender. Gender should only contain alphabetic characters." + html
+    if gender != "Male" and gender != "Female":
+        return "Invalid gender. Gender is generally male or female" + html
 
     if not all(char.isdigit() or char == "+" for char in phone_number):
         return "Invalid phone number. Phone number should only contain digits and '+'." + html
